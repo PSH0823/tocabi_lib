@@ -2,7 +2,11 @@
 #include <Eigen/Sparse>
 #include <rbdl/rbdl.h>
 #include <rbdl/addons/urdfreader/urdfreader.h>
-
+// #include <pinocchio/multibody/model.hpp>
+// #include <pinocchio/multibody/data.hpp>
+// #include <pinocchio/multibody/joint/joint-collection.hpp>
+// #include <pinocchio/algorithm/center-of-mass.hpp>
+// #include <pinocchio/algorithm/centroidal.hpp>
 #include "tocabi_lib/tocabi.h"
 #include "math_type_define.h"
 
@@ -16,21 +20,41 @@ public:
   // Update link i of rbdl link id. name : link name, mass : link mass, xipos : local center of mass position
   void Initialize(RigidBodyDynamics::Model &model_, int id_);
 
+  /** \brief Initialize link data:link id, mass, CoM pos., and gains used for whole body control.
+   * 
+   * \param model_ The pinocchio model containing the link.
+   * \param id_ The id of the link in the model.
+   */
+  // void Initialize(pinocchio::Model &model_, int id_);
+
   bool CheckName(RigidBodyDynamics::Model &model_);
+  // bool CheckName(pinocchio::Model &model_);
 
   // Update xpos, xipos, rotm.
   void UpdatePosition(RigidBodyDynamics::Model &model_, const Eigen::VectorQVQd &q_virtual_);
 
+  /** \brief Update the position of CoM(xipos), and the translation(xpos) and rotation(rotm) of the id-th frame w.r.t. the base frame(pelvis).
+   * 
+   * \param model_ The pinocchio model containing the link.
+   * \param data_ The pinocchio data containing the kinematic state.
+   * \param q_virtual_ The joint configuration vector containing the virtual joint states.
+   */
+  // void UpdatePosition(pinocchio::Model &model_, const pinocchio::Data &data_, const Eigen::VectorQVQd &q_virtual_);
+
   // update link velocity(6D, translation and rotation) from jacobian matrix Jac.
   void UpdateVW(RigidBodyDynamics::Model &model_, const Eigen::VectorQVQd &q_virtual_, const Eigen::VectorVQd &q_dot_virtual_);
+  // void UpdateVW(pinocchio::Model &model_, pinocchio::Data &data_, const Eigen::VectorQVQd &q_virtual_, const Eigen::VectorVQd &q_dot_virtual_);
 
   void GetPointPos(RigidBodyDynamics::Model &model_, const Eigen::VectorQVQd &q_virtual_, const Eigen::VectorVQd &q_dot_virtual_, Eigen::Vector3d &local_pos, Eigen::Vector3d &global_pos, Eigen::Vector6d &global_velocity6D);
+  // void GetPointPos(pinocchio::Model &model_, pinocchio::Data &data_, const Eigen::VectorQVQd &q_virtual_, const Eigen::VectorVQd &q_dot_virtual_, Eigen::Vector3d &local_pos, Eigen::Vector3d &global_pos, Eigen::Vector6d &global_velocity6D);
 
   // Update COM jacobian
   void UpdateJacobian(RigidBodyDynamics::Model &model_, const Eigen::VectorQVQd &q_virtual_);
+  // void UpdateJacobian(pinocchio::Model &model_, pinocchio::Data &data_, const Eigen::VectorQVQd &q_virtual_, const Eigen::VectorVQd &q_dot_virtual_);
 
   // Update COM jac + jac + vel
   void UpdateJacobian(RigidBodyDynamics::Model &model_, const Eigen::VectorQVQd &q_virtual_, const Eigen::VectorVQd &q_dot_virtual_);
+  // void UpdateJacobian(pinocchio::Model &model_, pinocchio::Data &data_, const Eigen::VectorQVQd &q_virtual_, const Eigen::VectorVQd &q_dot_virtual_);
 
   // set link Trajectory of id i.
   void SetTrajectory(Eigen::Vector3d position_desired, Eigen::Vector3d velocity_desired, Eigen::Matrix3d rotation_desired, Eigen::Vector3d rotational_velocity_desired);
@@ -92,6 +116,8 @@ public:
   // constant variables
   int id;
   double mass;
+  // // Get total mass of all links throuhgh pinocchio model.
+  // double getTotalMass(const pinocchio::Model &model_);
   // std::string name;
 
   // local COM position of body
@@ -105,6 +131,9 @@ public:
   Eigen::Vector3d sensor_point;
 
   // changing variables
+  // homogeneous transformation matrix
+  // pinocchio::SE3 oMi;   // oMi: SE3 of the i-th body in the model
+
   // rotation matrix
   Eigen::Matrix3d rotm;
 

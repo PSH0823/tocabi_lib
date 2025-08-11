@@ -17,14 +17,51 @@ void LinkData::Initialize(RigidBodyDynamics::Model &model_, int id_)
     rot_a_gain << 1, 1, 1;
 }
 
+// void LinkData::Initialize(pinocchio::Model &model_, int id_)
+
+// {
+//     id = id_;
+
+//     mass = model_.inertias[id_].mass();
+//     com_position = model_.inertias[id_].lever();
+//     inertia = model_.inertias[id_].inertia();
+
+//     pos_p_gain << 400, 400, 400;
+//     pos_d_gain << 40, 40, 40;
+//     pos_a_gain << 1, 1, 1;
+
+//     rot_p_gain << 400, 400, 400;
+//     rot_d_gain << 40, 40, 40;
+//     rot_a_gain << 1, 1, 1; 
+// }
+
+// double LinkData::getTotalMass(const pinocchio::Model &model_)
+// {
+//     double total_mass = 0.0;
+//     for (const auto &inertia : model_.inertias)
+//         total_mass += inertia.mass();
+//     return total_mass;
+// }
+
 void LinkData::UpdatePosition(RigidBodyDynamics::Model &model_, const Eigen::VectorQVQd &q_virtual_)
 {
     xpos = RigidBodyDynamics::CalcBodyToBaseCoordinates(model_, q_virtual_, id, Eigen::Vector3d::Zero(), false);
     xipos = RigidBodyDynamics::CalcBodyToBaseCoordinates(model_, q_virtual_, id, com_position, false);
     rotm = (RigidBodyDynamics::CalcBodyWorldOrientation(model_, q_virtual_, id, false)).transpose();
-
+    
     DyrosMath::rot2Euler_tf2(rotm, roll, pitch, yaw);
 
+}
+
+void LinkData::UpdatePosition(pinocchio::Model &model_, const pinocchio::Data &data_, const Eigen::VectorQVQd &q_virtual_)
+{
+    oMi = data_.oMi[id];    //oMi: SE3 of the i-th body in the model
+
+    xpos = oMi.translation();
+    xipos = oMi.act(model_.inertias[id].lever());
+    rotm = oMi.rotation();
+
+    DyrosMath::rot2Euler_tf2(rotm, roll, pitch, yaw);
 }
 
 void LinkData::UpdateVW(RigidBodyDynamics::Model &model_, const Eigen::VectorQVQd &q_virtual_, const Eigen::VectorVQd &q_dot_virtual_)
